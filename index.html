@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4ef">
+  <title>數字易經</title>
+  <style>
+    :root{color-scheme:light;--ink:#242820;--muted:#73766e;--paper:#f6f4ef;--card:#fffefa;--line:#e8e5db;--green:#355b48;--pale:#eaf0e9}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at 90% 0%,#e9eee7 0,transparent 34%),var(--paper);color:var(--ink);font-family:ui-sans-serif,"Segoe UI","Microsoft JhengHei",sans-serif;line-height:1.6}
+    main{max-width:760px;margin:auto;padding:48px 20px 64px}
+    header{margin:14px 0 28px}
+    h1{font-size:clamp(32px,7vw,48px);letter-spacing:-.04em;line-height:1.15;margin:0 0 12px}
+    header p{margin:0;color:var(--muted)}
+    header .steps{display:inline-block;margin-top:18px;padding:8px 12px;border-radius:10px;background:var(--pale);color:var(--green);font-size:14px;font-weight:700}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,5vw,34px);box-shadow:0 18px 50px #35372810}
+    label{display:block;font-weight:700;margin-bottom:9px}
+    .input-row{display:flex;gap:10px}
+    input{flex:1;min-width:0;border:1px solid #d8d8cc;border-radius:12px;background:white;padding:14px 15px;font:inherit;font-size:17px;letter-spacing:.04em;outline:none}
+    input:focus{border-color:var(--green);box-shadow:0 0 0 3px #355b481c}
+    button{border:0;border-radius:12px;background:var(--green);color:white;padding:13px 20px;font:inherit;font-weight:700;cursor:pointer}
+    button:hover{background:#294a39}
+    button.secondary{border:1px solid #dce5dc;background:var(--pale);color:var(--green)}
+    button.secondary:hover{background:#dfe9df}
+    .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+    .error{display:none;margin:14px 0 0;color:#a44435;font-size:14px}
+    .result{display:none;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
+    .result h2{font-size:19px;margin:0 0 8px}
+    .interpretation-note{font-size:13px;color:var(--muted);margin:0 0 14px}
+    .pairs{display:grid;gap:8px}
+    .pair-line{background:var(--pale);color:var(--green);border-radius:9px;padding:9px 12px;font-weight:700;font-variant-numeric:tabular-nums}
+    .flow-chart{margin-top:20px}
+    .flow-chart h2{font-size:19px;margin:0 0 10px}
+    .flow-track{display:flex;align-items:stretch;gap:8px;max-width:100%;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity}
+    .flow-card{flex:0 0 auto;min-width:88px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;text-align:center;scroll-snap-align:start}
+    .flow-pair{font-weight:750;font-variant-numeric:tabular-nums}
+    .flow-field{font-size:14px;color:var(--green)}
+    .flow-arrow{align-self:center;color:var(--muted);font-weight:700}
+    .sequence-detection{margin:18px 0 0;font-weight:700}
+    .statistics{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+    .statistics h2{font-size:19px;margin:0 0 10px}
+    .statistics-list{display:grid;gap:6px}
+    .statistics-line{font-weight:650}
+    .pending-count{margin:10px 0 0;color:var(--muted);font-size:14px}
+    .special-observation{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+    .special-observation h2{font-size:19px;margin:0 0 10px}
+    .special-observation-list{display:grid;gap:6px}
+    .story-card{margin-top:22px;padding:18px;border:1px solid #dce5dc;border-radius:16px;background:var(--pale)}
+    .story-card h2{font-size:19px;margin:0 0 8px;color:var(--green)}
+    .story-card p{margin:0}
+    .digit-chart{max-width:100%;margin-top:16px;overflow-x:auto;padding-bottom:6px}
+    .digit-chart h3{font-size:16px;margin:0 0 10px}
+    .digit-track{display:grid;grid-auto-rows:minmax(34px,auto);gap:4px 0;width:max-content;align-items:center;padding:2px 4px}
+    .observation-digit{display:grid;place-items:center;width:2rem;height:2rem;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:750;font-variant-numeric:tabular-nums}
+    .observation-digit.digit-zero{border-color:#e5a04a;background:#fff1df;color:#984c00}
+    .observation-digit.digit-five{border-color:#84a9d6;background:#e6f0ff;color:#24558c}
+    .special-adjacency-label{justify-self:center;width:4.8rem;text-align:center;color:var(--muted);font-size:11px;line-height:1.25;white-space:nowrap}
+    .copy-result-button{margin-top:20px}
+    .copy-status{min-height:1.5em;margin:8px 0 0;font-size:14px;color:var(--green)}
+    .copy-status.error{display:block;color:#a44435}
+    .story-engine{margin-top:20px}
+    .story-engine-button{width:100%}
+    .generated-story{display:none;margin-top:16px;padding:18px;border:1px solid #dce5dc;border-radius:16px;background:#fff}
+    .generated-story h3{margin:0 0 10px;color:var(--green);font-size:19px}
+    .generated-story p{margin:0 0 10px;white-space:pre-line}
+    .generated-story .story-sequence{font-size:13px;color:var(--muted)}
+    .generated-story h4{margin:16px 0 6px;font-size:15px;color:var(--green)}
+    .generated-story .story-reminder{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+    .comparison-panel{margin-top:22px}
+    .comparison-panel h2{font-size:22px;margin:0 0 8px}
+    .comparison-form{display:grid;gap:14px;margin-top:18px}
+    .comparison-actions{display:flex;gap:10px}
+    .comparison-actions button{flex:1}
+    .comparison-field label{margin-bottom:7px}
+    .comparison-field input{width:100%}
+    .comparison-results{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+    .comparison-card{min-width:0;border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff}
+    .comparison-card h3{margin:0 0 14px;font-size:18px;overflow-wrap:anywhere}
+    .comparison-card h4{margin:16px 0 8px;font-size:15px}
+    .comparison-statistics{display:grid;gap:5px}
+    .comparison-sequence{margin:16px 0 0;font-weight:700}
+    .site-reminder{margin-top:26px;padding:18px 4px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+    @media(max-width:560px){main{padding:30px 15px 48px}.input-row,.comparison-actions{flex-direction:column}.input-row input{width:100%;flex:none}button{width:100%}}
+    @media(max-width:680px){.comparison-results{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>你的手機號碼，藏著什麼數字故事？</h1>
+      <p>輸入一串數字，探索八星磁場的排列與組合。從數字開始，玩一場認識自己的趣味遊戲。</p>
+      <p class="steps">輸入數字 → 開始體驗 → 查看磁場解析</p>
+    </header>
+    <section class="panel" aria-labelledby="input-label">
+      <form id="experience-form" novalidate>
+        <label id="input-label" for="number-input">輸入一串數字</label>
+        <div class="input-row">
+          <input id="number-input" type="text" inputmode="numeric" autocomplete="off" maxlength="64" placeholder="例如：14191368" aria-describedby="privacy-note">
+          <button type="submit">開始體驗</button>
+          <button class="secondary" id="sample-button" type="button">試玩範例</button>
+          <button class="secondary" id="clear-button" type="button">清除重來</button>
+        </div>
+        <p class="hint" id="privacy-note">數字只會在這個頁面即時計算，不會儲存。</p>
+        <p class="error" id="error-message" role="alert"></p>
+      </form>
+      <section class="result" id="result" aria-live="polite">
+        <h2>兩位數組合與磁場分類</h2>
+        <p class="interpretation-note">以下是數字易經教材的傳統解讀主題，不是對個人命運的確定預測；「待核對」組合不提供解讀。</p>
+        <div class="pairs" id="pairs-output"></div>
+        <section class="flow-chart" aria-labelledby="flow-chart-title">
+          <h2 id="flow-chart-title">磁場排列圖</h2>
+          <div class="flow-track" id="flow-track" role="list" aria-label="依序排列的相鄰數字與磁場分類"></div>
+        </section>
+        <p class="sequence-detection" id="sequence-detection" aria-live="polite"></p>
+        <div class="statistics" id="statistics">
+          <h2>八星磁場統計</h2>
+          <div class="statistics-list" id="statistics-output"></div>
+          <p class="pending-count" id="pending-count" hidden></p>
+        </div>
+        <section class="special-observation" aria-labelledby="special-observation-title">
+          <h2 id="special-observation-title">0與5觀察</h2>
+          <div class="special-observation-list" id="special-observation-output"></div>
+          <div class="digit-chart" id="digit-chart" hidden>
+            <h3>0與5排列觀察圖</h3>
+            <div class="digit-track" id="digit-track" role="img" aria-label="依原始順序排列的數字，0和5使用顏色標示"></div>
+          </div>
+        </section>
+        <section class="story-card" aria-labelledby="story-card-title">
+          <h2 id="story-card-title">我的數字故事</h2>
+          <p id="story-card-text"></p>
+        </section>
+        <button class="copy-result-button" id="copy-result-button" type="button">複製解析結果</button>
+        <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+        <section class="story-engine" aria-label="號碼故事">
+          <button class="story-engine-button" id="story-engine-button" type="button">看看我的號碼故事</button>
+          <article class="generated-story" id="generated-story" aria-live="polite">
+            <h3 id="generated-story-title"></h3>
+            <p class="story-sequence" id="generated-story-sequence"></p>
+            <p id="generated-story-body"></p>
+            <h4>故事裡的鏡子</h4>
+            <p id="generated-story-mirror"></p>
+            <p class="story-reminder">數字是一面鏡子，不是一道判決。本故事為象徵性創作，不代表命運預測。</p>
+          </article>
+        </section>
+      </section>
+    </section>
+    <section class="panel comparison-panel" aria-labelledby="comparison-title">
+      <h2 id="comparison-title">雙號碼比較</h2>
+      <p class="hint">輸入兩組數字，分別查看統計、排列圖與生天延辨識結果。</p>
+      <form id="comparison-form" class="comparison-form" novalidate>
+        <div class="comparison-field">
+          <label for="comparison-number-a">第一組數字</label>
+          <input id="comparison-number-a" type="text" inputmode="numeric" autocomplete="off" maxlength="64" placeholder="例如：7887687">
+        </div>
+        <div class="comparison-field">
+          <label for="comparison-number-b">第二組數字</label>
+          <input id="comparison-number-b" type="text" inputmode="numeric" autocomplete="off" maxlength="64" placeholder="輸入另一組數字">
+        </div>
+        <div class="comparison-actions">
+          <button type="submit">比較號碼</button>
+          <button class="secondary" id="clear-comparison-button" type="button">清除比較</button>
+        </div>
+        <p class="error" id="comparison-error" role="alert"></p>
+      </form>
+      <div class="comparison-results" id="comparison-results" aria-live="polite">
+        <article class="comparison-card" id="comparison-a-output"></article>
+        <article class="comparison-card" id="comparison-b-output"></article>
+      </div>
+    </section>
+    <footer class="site-reminder">本站提供數字易經文化與趣味探索，解析結果不代表科學驗證的命運預測，也不作為人生重大決策的依據。</footer>
+  </main>
+  <script id="story-database" type="application/json">{"schemaVersion":1,"description":"八星角色的象徵性創作素材；可獨立編輯，不代表命運預測。","style":{"name":"星語式幽默","humorLevel":2,"humorLevelScale":{"1":"淡淡幽默","2":"俏皮吐槽","3":"反差加強"}},"undefinedPairs":{"display":"待核對","storyMaterial":null},"storyEngineRules":{"version":1,"scope":"週末旅行；延年主導且只有一種次要磁場時，依次要磁場選擇互動規則。規則依磁場組合，不依完整號碼。","leadActions":{"延年":"先規劃交通、住宿與行程；規劃過度時會想確認並控制每個細節。"},"interactions":{"延年":{"伏位":{"title":"《出發前的最後一次確認》","opening":"週六早上，主角的背包已在門邊，延年還把景點、交通、午餐和回程排成半小時一格。","conflict":"伏位提醒：「訂房、車票、天氣都確認了嗎？」主角逐項打勾，伏位又翻出另一張截圖：「這張是不是更新的？」延年立刻重查路線，出發時間一再往後。","turn":"主角看著打包好的行李問：「哪些沒確認就真的不能走？」伏位停了一下，列出訂房、去回交通、步道是否開放；三項都有答案。","decision":"延年把餐廳、拍照點和備用咖啡店移到可選清單，主角終於出門，只趕上下一班車。","ending":"到海邊後，伏位伸手想再看一次天氣，主角指指窗外的太陽：「這個不用截圖了。」延年也收起行程表，第一次沒有替休息安排結束時間。"},"五鬼":{"title":"《行程表上的臨時彎道》","opening":"週五晚上，延年已把週末旅行排妥：早上走步道、中午逛老街、下午看海，車票和住宿也都確認了。","conflict":"五鬼突然提議：「海邊附近有個小漁港，日落應該比老街有趣，我們改去那裡吧！」延年皺眉：「臨時改點，車程和用餐時間都得重排。」原本的計畫卡在地圖上，誰也不肯先讓步。","turn":"五鬼又說：「不加一站，只把老街換成漁港，車票和住宿都不動。」延年把已預訂的交通與住宿圈成固定項，重新看地圖，發現漁港就在原路上。","decision":"主角保留步道、回程時間和住宿，只把老街換成漁港，其餘行程留白。","ending":"週日回家時，延年發現只改了一格，竟沒有人錯過車。五鬼想立刻提案下次去外島，延年指著唯一的空白格：「先把今天玩完，那格留給下次的你。」"},"絕命":{"title":"《行程表追上背包了》","opening":"週六清晨，延年還在比較兩種車班，絕命已把背包拎到門口：「先上車再說，到了再找住宿！」主角一手拿包、一手點開叫車頁面。","conflict":"延年喊住主角：「至少確認回程和住宿，別把冒險變成露宿。」絕命催：「每件事都查完，早上就過去了！」一個守著清單，一個已站在門外，出發卡在門檻上。","turn":"主角把兩邊的話合起來：先確認去回交通、住宿和天氣三件必要事項，其餘景點到當地再決定。延年查班次，絕命同步整理水和雨具。","decision":"三項確認後，主角立刻買票出發，沒有等行程表排到最後一格。","ending":"上車後，絕命說：「我只多等了幾分鐘。」延年看著沒填滿的行程表：「我也只排了必要的幾格。」主角靠窗坐好，兩個聲音終於都安靜下來。"}}}},"characters":[{"field":"生氣","roleName":"貴人","storyLabel":"隨和的同事","personality":"樂觀開朗、善於協調，能讓人願意加入；有時太隨和，不太主動把想法說出來。","humorFeature":"把人脈經營成生活服務台，還附帶一點不請自來的行程管理。","storyStrength":"善於協調，能讓大家更容易一起行動","storyAction":"樂觀協調，連起需要合作的人","storyBlindSpot":"太隨和，容易等別人先決定","gentleReminder":"也可以先說出自己的想法，再配合大家。","catchphrase":"我剛好認識一個人，要不要順便認識？","storyMaterial":"貴人出門買咖啡，回程替三人牽好合作，還收到聚餐邀請；他說只是順路，導航卻繞了四圈。"},{"field":"天醫","roleName":"資源家","storyLabel":"善用資源的同事","personality":"聰明靈活、善用手邊資源；有時猶豫太久，最後把決定交給隨緣。","humorFeature":"把零碎線索整理成資源清單，連冰箱剩半顆檸檬都列入資產。","storyStrength":"善於看見並運用手邊可用資源","storyAction":"盤點現有資源，找出靈活的解法","storyBlindSpot":"容易猶豫太久，最後交給隨緣","gentleReminder":"先選一個可行的小步驟，不必等到所有條件完美。","catchphrase":"先別丟，這個說不定用得上。","storyMaterial":"資源家整理抽屜，發現折價券、電池和半包餅乾，宣布寶藏出土；大家還沒鼓掌，他已排好使用順序。"},{"field":"延年","roleName":"管理者","storyLabel":"負責排程的主管","personality":"責任感強、擅長領導與組織，遇到任務能帶頭完成；有時太強勢，容易想掌控每個細節。","humorFeature":"責任感強到連放假都想開會，還會替放空訂出明確的開始時間。","storyStrength":"有責任感，能組織事情並帶頭完成","storyAction":"整理目標與流程，帶大家完成任務","storyBlindSpot":"容易太強勢，想掌控每個細節","gentleReminder":"分工時也留一點空間，聽聽別人的做法。","catchphrase":"大家先別急，我把休息也排進流程了。","storyMaterial":"管理者安排一天放空，行事曆提醒下午三點務必休息。他沉思片刻，決定把休息延長成兩小時專案。"},{"field":"伏位","roleName":"守候者","storyLabel":"細心的同事","personality":"耐心細心、穩定可靠，能留意容易漏掉的地方；有時太保守，準備很久才肯開始。","humorFeature":"把等待過成一門優雅學問，偶爾等到機會自己來敲門還先確認預約。","storyStrength":"細心穩定，能發現容易忽略的細節","storyAction":"耐心核對細節，確認重要條件","storyBlindSpot":"有時太保守，拖到很晚才開始","gentleReminder":"先確認最重要的一兩件事，接著就可以出發。","catchphrase":"不是不動，我在等宇宙的正式公文。","storyMaterial":"守候者報名郊遊，先等天氣、等同伴、再等時機；通知終於來了，他帶上雨傘，還替遲到的雲留位。"},{"field":"六煞","roleName":"魅力家","storyLabel":"善於傾聽的同事","personality":"擅長溝通、敏銳觀察情緒，知道何時該聽；有時太在意別人感受，忘了說出自己想法。","humorFeature":"能讀懂空氣，也容易替空氣補上三種不同版本的字幕。","storyStrength":"善於溝通，也能留意他人的情緒","storyAction":"傾聽不同感受，找到彼此舒服的說法","storyBlindSpot":"太在意別人感受，容易忘了自己","gentleReminder":"照顧別人時，也記得問問自己真正想要什麼。","catchphrase":"他剛才那個表情，我們要不要開個小型研討會？","storyMaterial":"魅力家收到一句好喔，立刻推演七種語氣；朋友勸他別多想，他笑著點頭，回家仍替每種語氣備好回覆。"},{"field":"禍害","roleName":"辯論家","storyLabel":"直率的同事","personality":"口才好、反應快、善於表達；有時太想說服對方，讓討論變成爭輸贏。","humorFeature":"把日常小事講成精彩辯題，連最後一塊蛋糕都能提出三項論證。","storyStrength":"口齒清楚、反應敏捷，能把想法說明白","storyAction":"清楚表達觀點，也敢提出問題","storyBlindSpot":"太想說服別人，容易爭起輸贏","gentleReminder":"說明立場後，也留一點時間聽聽對方。","catchphrase":"我不是要辯論，只是想補充十二個重點。","storyMaterial":"辯論家主張蛋糕該切大一點，三分鐘後畫出圓餅圖；大家開始分蛋糕，他宣布反方也有理，先拿起叉子。"},{"field":"五鬼","roleName":"變革者","storyLabel":"點子多的同事","personality":"創意多、能突破舊方法，也很會臨場應變；有時想法變得太快，難以持續做完一件事。","humorFeature":"腦中企劃案輪班不打烊，昨天想開咖啡廳，今天已研究火星房地產。","storyStrength":"有創意，遇到變化時能找到新做法","storyAction":"靈活應變，提出不同的可能方案","storyBlindSpot":"點子常變，容易難以持續收尾","gentleReminder":"先挑一個最想完成的點子，讓它走完一小段。","catchphrase":"我有個新點子，先聽完再問預算。","storyMaterial":"變革者昨天想開咖啡廳，今天研究火星房地產，晚上合成星際外帶店；朋友問何時開張，他說先在地球試營運。"},{"field":"絕命","roleName":"冒險家","storyLabel":"行動派同事","personality":"積極有毅力、擅長企劃與行動；有時太衝，還沒和大家協調就先往前跑。","humorFeature":"行動派的行李永遠先打包，行程則相信路上會長出來。","storyStrength":"積極有毅力，能把企劃化成實際行動","storyAction":"規劃下一步，積極推進並嘗試執行","storyBlindSpot":"有時太衝，還沒協調就先行動","gentleReminder":"開始前先和夥伴對一下方向，行動會更順。","catchphrase":"先出發，迷路也是一種現場調查。","storyMaterial":"冒險家看見郊遊邀請就背包出發，到車站才想起目的地未定；他笑說正好，今天第一站就叫選擇。"}]}</script>
+  <script>
+    const magneticFieldByPair = {
+      '14':'生氣','41':'生氣','67':'生氣','76':'生氣','39':'生氣','93':'生氣','28':'生氣','82':'生氣',
+      '13':'天醫','31':'天醫','68':'天醫','86':'天醫','49':'天醫','94':'天醫','27':'天醫','72':'天醫',
+      '19':'延年','91':'延年','78':'延年','87':'延年','34':'延年','43':'延年','26':'延年','62':'延年',
+      '11':'伏位','22':'伏位','99':'伏位','88':'伏位','66':'伏位','77':'伏位','33':'伏位','44':'伏位',
+      '16':'六煞','61':'六煞','47':'六煞','74':'六煞','38':'六煞','83':'六煞','29':'六煞','92':'六煞',
+      '17':'禍害','71':'禍害','89':'禍害','98':'禍害','46':'禍害','64':'禍害','23':'禍害','32':'禍害',
+      '18':'五鬼','81':'五鬼','79':'五鬼','97':'五鬼','36':'五鬼','63':'五鬼','24':'五鬼','42':'五鬼',
+      '12':'絕命','21':'絕命','69':'絕命','96':'絕命','48':'絕命','84':'絕命','37':'絕命','73':'絕命'
+    };
+    const topicByField = {
+      '生氣':'貴人、人脈、轉機、開朗',
+      '天醫':'財富、聰明、感情順遂',
+      '延年':'專業、領導、責任、延續',
+      '伏位':'等待、謹慎、保守、持續',
+      '六煞':'人際、魅力、猶豫、情感糾葛',
+      '禍害':'口才、表達、口舌衝突',
+      '五鬼':'創意、變動、想法多',
+      '絕命':'行動力、企劃、起伏較大'
+    };
+    const form = document.getElementById('experience-form');
+    const numberInput = document.getElementById('number-input');
+    const sampleButton = document.getElementById('sample-button');
+    const clearButton = document.getElementById('clear-button');
+    const errorMessage = document.getElementById('error-message');
+    const result = document.getElementById('result');
+    const pairsOutput = document.getElementById('pairs-output');
+    const flowTrack = document.getElementById('flow-track');
+    const sequenceDetection = document.getElementById('sequence-detection');
+    const statisticsOutput = document.getElementById('statistics-output');
+    const pendingCountOutput = document.getElementById('pending-count');
+    const specialObservationOutput = document.getElementById('special-observation-output');
+    const digitChart = document.getElementById('digit-chart');
+    const digitTrack = document.getElementById('digit-track');
+    const storyCardText = document.getElementById('story-card-text');
+    const copyResultButton = document.getElementById('copy-result-button');
+    const copyStatus = document.getElementById('copy-status');
+    const fieldOrder = Object.keys(topicByField);
+    const storyByField = {
+      '生氣':'像熱心的連結者，讓交流與新點子更容易登場。',
+      '天醫':'像靈感與溫暖的夥伴，為故事添上從容與好心情。',
+      '延年':'像可靠的策劃者，讓每一步多一點方向與持續力。',
+      '伏位':'像安靜觀察的主角，按自己的步調慢慢累積故事。',
+      '六煞':'像敏銳的觀察家，為故事添上細膩的人際與情感色彩。',
+      '禍害':'像生動的說書人，讓想法有機會被聽見，也留點空間交流。',
+      '五鬼':'像好奇的點子製造機，總能替故事帶來新鮮轉折。',
+      '絕命':'像勇於動手的實踐者，常把構想化成下一個行動。'
+    };
+    const comparisonForm = document.getElementById('comparison-form');
+    const comparisonNumberA = document.getElementById('comparison-number-a');
+    const comparisonNumberB = document.getElementById('comparison-number-b');
+    const comparisonError = document.getElementById('comparison-error');
+    const comparisonResults = document.getElementById('comparison-results');
+    const comparisonAOutput = document.getElementById('comparison-a-output');
+    const comparisonBOutput = document.getElementById('comparison-b-output');
+    const clearComparisonButton = document.getElementById('clear-comparison-button');
+    const storyDatabase = JSON.parse(document.getElementById('story-database').textContent);
+    const storyEngineButton = document.getElementById('story-engine-button');
+    const generatedStory = document.getElementById('generated-story');
+    const generatedStoryTitle = document.getElementById('generated-story-title');
+    const generatedStorySequence = document.getElementById('generated-story-sequence');
+    const generatedStoryBody = document.getElementById('generated-story-body');
+    const generatedStoryMirror = document.getElementById('generated-story-mirror');
+
+    function createStory(fieldSequence, pairSequence) {
+      const characterByField = Object.fromEntries(
+        storyDatabase.characters.map((character) => [character.field, character])
+      );
+      const counts = Object.fromEntries(storyDatabase.characters.map(({ field }) => [field, 0]));
+      const orderedFields = [];
+      fieldSequence.forEach((field) => {
+        if (!field) return;
+        counts[field] += 1;
+        if (!orderedFields.includes(field)) orderedFields.push(field);
+      });
+      if (orderedFields.length === 0) return null;
+
+      const tieBreakOrder = ['延年', '生氣', '天醫', '伏位', '六煞', '禍害', '五鬼', '絕命'];
+      const highestCount = Math.max(...orderedFields.map((field) => counts[field]));
+      const leadField = tieBreakOrder.find((field) => counts[field] === highestCount);
+      const lead = characterByField[leadField];
+      const supporting = orderedFields.filter((field) => field !== leadField)
+        .map((field) => characterByField[field]);
+      const pendingCount = fieldSequence.filter((field) => !field).length;
+      const definedPairCount = fieldSequence.filter(Boolean).length;
+      const arrangementText = pairSequence
+        .map(({ pair, field }) => `${pair}${field || '待核對'}`)
+        .join(' → ');
+      const castText = `同一位主角的內心聲音：主要聲音${lead.field}（${counts[leadField]}次）；其他聲音：${supporting.length
+        ? supporting.map((character) => `${character.field}（${counts[character.field]}次）`).join('、')
+        : '無'}。次數並列時依固定順序「延年、生氣、天醫、伏位、六煞、禍害、五鬼、絕命」選主要聲音。`;
+      const mirror = `象徵優勢：${lead.storyStrength}。可能盲點：${lead.storyBlindSpot}。溫和提醒：${lead.gentleReminder}`;
+
+      const travelRules = storyDatabase.storyEngineRules;
+      const secondaryField = supporting.length === 1 ? supporting[0].field : null;
+      const interactionRule = travelRules?.interactions?.[leadField]?.[secondaryField];
+      if (travelRules?.leadActions?.[leadField] && interactionRule) {
+        const body = [
+          interactionRule.opening,
+          interactionRule.conflict,
+          interactionRule.turn,
+          interactionRule.decision,
+          interactionRule.ending
+        ].join('\n');
+        return {
+          title: interactionRule.title,
+          sequenceText: `磁場排列：${arrangementText}\n角色分工：${castText}${pendingCount ? `\n另有${pendingCount}組待核對，不安排角色。` : ''}`,
+          body,
+          mirror
+        };
+      }
+
+      const isOverplanningTravel = definedPairCount === 7 && leadField === '延年'
+        && counts['伏位'] === 1 && counts['禍害'] === 2 && counts['五鬼'] === 1;
+      const isRushingTravel = definedPairCount === 7 && leadField === '絕命'
+        && counts['延年'] === 2 && counts['伏位'] === 1 && counts['五鬼'] === 1;
+      if (isOverplanningTravel || isRushingTravel) {
+        let title;
+        let body;
+        if (isOverplanningTravel) {
+          title = '《把行程表留一格給放鬆》';
+          body = '主角只想週末去海邊散心。延年先把日出、步道、老街和咖啡排成半小時一格，連發呆也限時十五分；週五夜裡還在比較差九分鐘的兩條路線，旅行先忙成了專案。\n伏位提醒：「先看一下步道公告，午後有一段封閉。」主角查完只好改路線。禍害立刻追問：「既然要改，為什麼還硬塞老街和咖啡？你是去看海，還是去巡場？」五鬼接話：「附近有港邊市集，逛到想回家再回家。」\n主角刪掉兩個景點，只留下市集和回程時間。週六坐在海堤看浪時，延年設定的十五分鐘提醒響了；主角按掉鬧鐘，說：「這一站，沒有下一站。」';
+        } else {
+          title = '《先出發，等等先查票》';
+          body = '主角看到週末放晴，絕命馬上催：「現在出發，細節路上再想！」背包一抓就衝到門口，住宿還只存著網頁。延年喊住主角：「至少先查回程車，不要把冒險變成露宿。」伏位翻出收藏頁面：「這間民宿是下週的日期，這週還沒訂。」主角的鞋已穿好，旅行卻差點卡在日期。\n五鬼提議：「改成近郊一日來回吧，挑一段海線步道，傍晚就回家。」延年查到往返車班，伏位再確認步道當天開放；絕命還想立刻叫車，最後決定先買好車票、帶水再出門。\n到了月台，絕命笑說：「先查也沒有慢多少。」延年已在心裡替這句話建立標準流程，主角趕緊補充：「流程一頁就好。」';
+        }
+        return {
+          title,
+          sequenceText: `磁場排列：${arrangementText}\n角色分工：${castText}${pendingCount ? `\n另有${pendingCount}組待核對，不安排角色。` : ''}`,
+          body,
+          mirror
+        };
+      }
+
+      const scenes = [
+        { title: '《晚餐要吃哪一家？》', event: '今晚想和朋友吃飯，訂位頁面只剩一桌，群組卻人人都說「我都可以」。', decision: '選了交通方便、菜色好調整的店，並先訂位再通知大家。', twist: '最後大家都準時到了；主角發現最難決定的，原來不是菜單，而是那句「我都可以」。' },
+        { title: '《行李箱裡的三種人生》', event: '主角打算週末去旅行，行李箱已經打開，目的地和天氣卻還沒定案。', decision: '先訂一晚住宿、帶一把傘，其他行程留給抵達後再決定。', twist: '旅程順利成行；回家打開行李箱，才發現備用清單比衣服還厚。' },
+        { title: '《購物車的深夜會議》', event: '主角看中一台新家電，購物車裡躺了三個型號，折扣倒數只剩一小時。', decision: '先確認家裡尺寸和保固，再選符合需求的一台，不為倒數計時加購。', twist: '結帳成功後，主角關掉購物車；省下的運費沒有再被拿去湊免運。' },
+        { title: '《請假申請與內心簽核》', event: '主角想請一天假，工作交接還沒寫，腦中已經開起一場討論。', decision: '請一天假，只列三項必要交接，行程不排滿。', twist: '請假信送出後，主角真的休息了一天；最難完成的待辦，竟是「不要替休息安排待辦」。' },
+        { title: '《旅行計畫先別開分店》', event: '主角想安排一趟兩天一夜小旅行，收藏清單卻長得像要環島。', decision: '只選一個主要景點和一間住宿，其餘時間留白。', twist: '旅程順利成行；出發前，主角還是替「留白」做了一張備案表。' }
+      ];
+      const pairDigits = pairSequence.map(({ pair }) => pair).join('');
+      const scenarioIndex = Array.from(pairDigits).reduce((sum, digit) => sum + Number(digit), 0) % scenes.length;
+      const scene = scenes[scenarioIndex];
+      const voices = {
+        '延年': '「先把目標、時間和備案排清楚，事情才不會漏掉。」',
+        '伏位': '「先核對最重要的資訊，確認過再開始，免得白忙一場。」',
+        '生氣': '「別自己扛啦，我們可以把需要協調的事先說清楚，其他人通常願意幫忙。」',
+        '天醫': '「先看看手邊已有什麼，挑最合用的資源；不用為了折扣多花一筆。」',
+        '六煞': '「我聽得出你有點猶豫；要不要先說出真正介意的事，再一起找舒服的做法？」',
+        '禍害': '「等一下，這個安排真的有必要嗎？我把理由講清楚，免得忙半天還做錯。」',
+        '五鬼': '「如果照原計畫卡住，就換個簡單方法試試；這次先挑一個點子做完。」',
+        '絕命': '「先做一小步就知道可不可行，現在就開始吧！」'
+      };
+      if (scenarioIndex === 3) {
+        Object.assign(voices, {
+          '延年': '「我來安排，交接、行事曆和請假信都要確認好。」',
+          '伏位': '「先核對那天有沒有已答應的事，交接也只留必要項目，免得請假前先忙到沒力氣。」',
+          '生氣': '「別自己扛啦，我可以先幫你把交接說清楚；大家知道安排就安心了。」',
+          '天醫': '「如果手邊有補休，請一天剛好。行程不用花錢安排，睡飽也是很好的資源。」'
+        });
+      }
+      const dialogueFields = orderedFields.filter((field) => field !== leadField);
+      const dialogue = dialogueFields.map((field) => `${field}：${voices[field]}`).join('\n');
+      const leadReturns = {
+        '生氣': '「好吧，我先問清楚主角真正想做什麼，再幫忙把人和事情協調好。」',
+        '天醫': '「方案已經夠用了；我先不找第六個選項，讓決定往前走。」',
+        '延年': '「好，我保留必要安排；至於每個步驟的檢查，就不另外開表了。」',
+        '伏位': '「已經核對過了，這次就照確認的版本開始，不再翻舊資料。」',
+        '六煞': '「我先把自己的想法說出來，不替每個人的表情猜答案。」',
+        '禍害': '「理由講清楚就好，我不必把每個不同意見都辯到最後。」',
+        '五鬼': '「這次先把眼前這個點子做完，新點子先放進備忘錄。」',
+        '絕命': '「我先和大家對好方向，再開始行動，速度不會因此少一點。」'
+      };
+      const leadLine = `${leadField}：${leadReturns[leadField]}`;
+      const decisionLine = `主角聽完後說：「${scene.decision}」`;
+      const leadBlindSpot = lead.personality.split('；')[1] || lead.storyBlindSpot;
+      const body = `${scene.event}\n${leadField}：${voices[leadField]}不過，${leadBlindSpot}\n${dialogue}\n${leadLine}\n${decisionLine}\n${scene.twist}`;
+      return {
+        title: scene.title,
+        sequenceText: `磁場排列：${arrangementText}\n角色分工：${castText}${pendingCount ? `\n另有${pendingCount}組待核對，不安排角色。` : ''}`,
+        body,
+        mirror
+      };
+    }
+
+    storyEngineButton.addEventListener('click', () => {
+      const pairSequence = Array.from(flowTrack.children)
+        .filter((item) => item.className === 'flow-card')
+        .map((card) => ({
+          pair: card.children[0].textContent,
+          field: storyDatabase.characters.some(({ field }) => field === card.children[1].textContent)
+            ? card.children[1].textContent
+            : null
+        }));
+      const fields = pairSequence.map(({ field }) => field);
+      const story = createStory(fields, pairSequence);
+      if (story) {
+        generatedStoryTitle.textContent = story.title;
+        generatedStorySequence.textContent = story.sequenceText;
+        generatedStoryBody.textContent = story.body;
+        generatedStoryMirror.textContent = story.mirror;
+      } else {
+        generatedStoryTitle.textContent = '《故事角色還在核對中》';
+        generatedStorySequence.textContent = '所有相鄰組合目前都是「待核對」。';
+        generatedStoryBody.textContent = '目前沒有已確認的八星角色可以登場，先不替這組數字安排故事。等素材核對完成，再邀請角色加入。';
+        generatedStoryMirror.textContent = '這組數字目前沒有已確認的角色可以整理。';
+      }
+      generatedStory.style.display = 'block';
+    });
+
+    function validateNumberInput(rawValue) {
+      const value = rawValue.trim();
+      if (value.length === 0) {
+        return { value, error: '請先輸入數字喔！' };
+      }
+      if (!/^[0-9]+$/.test(value)) {
+        return { value, error: '只能輸入0～9的數字喔！' };
+      }
+      if (value.length < 2) {
+        return { value, error: '至少需要2個數字才能解析。' };
+      }
+      if (value.length > 64) {
+        return { value, error: '數字最多輸入64位喔！' };
+      }
+      return { value, error: '' };
+    }
+
+    function renderComparisonSide(value, output, title) {
+      output.replaceChildren();
+      const heading = document.createElement('h3');
+      heading.textContent = `${title}：${value}`;
+      output.append(heading);
+
+      const pairs = Array.from(
+        { length: value.length - 1 },
+        (_, index) => value.slice(index, index + 2)
+      );
+      const counts = Object.fromEntries(fieldOrder.map((field) => [field, 0]));
+      const trackHeading = document.createElement('h4');
+      trackHeading.textContent = '磁場排列圖';
+      const track = document.createElement('div');
+      track.className = 'flow-track';
+      track.setAttribute('role', 'list');
+      track.setAttribute('aria-label', `${title}的相鄰數字與磁場分類`);
+      pairs.forEach((pair) => {
+        const field = magneticFieldByPair[pair];
+        if (field) counts[field] += 1;
+
+        if (track.children.length > 0) {
+          const arrow = document.createElement('span');
+          arrow.className = 'flow-arrow';
+          arrow.textContent = '→';
+          arrow.setAttribute('aria-hidden', 'true');
+          track.append(arrow);
+        }
+        const card = document.createElement('div');
+        card.className = 'flow-card';
+        card.setAttribute('role', 'listitem');
+        card.setAttribute('aria-label', `${pair}，${field || '待核對'}`);
+        const pairLabel = document.createElement('div');
+        pairLabel.className = 'flow-pair';
+        pairLabel.textContent = pair;
+        const fieldLabel = document.createElement('div');
+        fieldLabel.className = 'flow-field';
+        fieldLabel.textContent = field || '待核對';
+        card.append(pairLabel, fieldLabel);
+        track.append(card);
+      });
+
+      const statisticsHeading = document.createElement('h4');
+      statisticsHeading.textContent = '八星磁場統計';
+      output.append(statisticsHeading);
+      const statistics = document.createElement('div');
+      statistics.className = 'comparison-statistics';
+      const sortedCounts = Object.entries(counts)
+        .filter(([, count]) => count > 0)
+        .sort(([fieldA, countA], [fieldB, countB]) =>
+          countB - countA || fieldOrder.indexOf(fieldA) - fieldOrder.indexOf(fieldB)
+        );
+      sortedCounts.forEach(([field, count]) => {
+        const line = document.createElement('div');
+        line.className = 'statistics-line';
+        line.textContent = `${field}：${count}次`;
+        statistics.append(line);
+      });
+      output.append(statistics);
+      output.append(trackHeading, track);
+
+      const qualifyingSequences = [];
+      for (let index = 0; index <= value.length - 4; index += 1) {
+        const fourDigits = value.slice(index, index + 4);
+        const firstField = magneticFieldByPair[fourDigits.slice(0, 2)];
+        const secondField = magneticFieldByPair[fourDigits.slice(1, 3)];
+        const thirdField = magneticFieldByPair[fourDigits.slice(2, 4)];
+        if (firstField === '生氣' && secondField === '天醫' && thirdField === '延年') {
+          qualifyingSequences.push(fourDigits);
+        }
+      }
+      const sequence = document.createElement('p');
+      sequence.className = 'comparison-sequence';
+      sequence.textContent = qualifyingSequences.length > 0
+        ? `發現生天延連續排列：${qualifyingSequences.join('、')}`
+        : '未發現生天延連續排列';
+      output.append(sequence);
+    }
+
+    comparisonForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      comparisonResults.style.display = 'none';
+      comparisonAOutput.replaceChildren();
+      comparisonBOutput.replaceChildren();
+      const validationA = validateNumberInput(comparisonNumberA.value);
+      const validationB = validateNumberInput(comparisonNumberB.value);
+      if (validationA.error || validationB.error) {
+        const failedInput = validationA.error
+          ? { label: '第一組', validation: validationA }
+          : { label: '第二組', validation: validationB };
+        comparisonError.textContent = `${failedInput.label}：${failedInput.validation.error}`;
+        comparisonError.style.display = 'block';
+        return;
+      }
+
+      comparisonError.style.display = 'none';
+      comparisonNumberA.value = validationA.value;
+      comparisonNumberB.value = validationB.value;
+      renderComparisonSide(validationA.value, comparisonAOutput, '第一組');
+      renderComparisonSide(validationB.value, comparisonBOutput, '第二組');
+      comparisonResults.style.display = 'grid';
+    });
+
+    sampleButton.addEventListener('click', () => {
+      numberInput.value = '7887687';
+      form.requestSubmit();
+    });
+
+    clearButton.addEventListener('click', () => {
+      numberInput.value = '';
+      errorMessage.textContent = '';
+      errorMessage.style.display = 'none';
+      result.style.display = 'none';
+      pairsOutput.replaceChildren();
+      flowTrack.replaceChildren();
+      sequenceDetection.textContent = '';
+      statisticsOutput.replaceChildren();
+      pendingCountOutput.textContent = '';
+      pendingCountOutput.hidden = true;
+      specialObservationOutput.replaceChildren();
+      digitTrack.replaceChildren();
+      digitTrack.style.gridTemplateColumns = '';
+      digitTrack.removeAttribute('aria-label');
+      digitChart.hidden = true;
+      storyCardText.textContent = '';
+      copyStatus.textContent = '';
+      copyStatus.classList.remove('error');
+      generatedStory.style.display = 'none';
+      generatedStoryTitle.textContent = '';
+      generatedStorySequence.textContent = '';
+      generatedStoryBody.textContent = '';
+      generatedStoryMirror.textContent = '';
+    });
+
+    clearComparisonButton.addEventListener('click', () => {
+      comparisonNumberA.value = '';
+      comparisonNumberB.value = '';
+      comparisonError.textContent = '';
+      comparisonError.style.display = 'none';
+      comparisonResults.style.display = 'none';
+      comparisonAOutput.replaceChildren();
+      comparisonBOutput.replaceChildren();
+    });
+
+    copyResultButton.addEventListener('click', async () => {
+      const fields = Array.from(flowTrack.children)
+        .filter((item) => item.className === 'flow-card')
+        .map((card) => card.children[1].textContent.trim());
+      const statistics = Array.from(statisticsOutput.children)
+        .map((line) => line.textContent.trim());
+      const pending = pendingCountOutput.hidden ? '' : pendingCountOutput.textContent.trim();
+      const sequence = sequenceDetection.textContent.startsWith('發現') ? '有' : '未發現';
+      const copyText = [
+        '數字易經解析結果',
+        `八星磁場排列：${fields.join(' → ')}`,
+        '八星磁場統計：',
+        ...(statistics.length > 0 ? statistics : ['沒有已定義的磁場組合']),
+        ...(pending ? [pending] : []),
+        `生天延連續排列：${sequence}`
+      ].join('\n');
+
+      copyStatus.textContent = '';
+      copyStatus.classList.remove('error');
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(copyText);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = copyText;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.append(textarea);
+          textarea.select();
+          const copied = document.execCommand?.('copy');
+          textarea.remove();
+          if (!copied) throw new Error('Clipboard copy command failed');
+        }
+        copyStatus.textContent = '已複製，可以分享給朋友囉！';
+      } catch {
+        copyStatus.textContent = '複製失敗，請確認瀏覽器允許剪貼簿存取後再試一次。';
+        copyStatus.classList.add('error');
+      }
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const validation = validateNumberInput(numberInput.value);
+      const value = validation.value;
+      result.style.display = 'none';
+      pairsOutput.replaceChildren();
+      flowTrack.replaceChildren();
+      sequenceDetection.textContent = '';
+      statisticsOutput.replaceChildren();
+      specialObservationOutput.replaceChildren();
+      digitTrack.replaceChildren();
+      digitChart.hidden = true;
+      storyCardText.textContent = '';
+      pendingCountOutput.textContent = '';
+      pendingCountOutput.hidden = true;
+      copyStatus.textContent = '';
+      copyStatus.classList.remove('error');
+      generatedStory.style.display = 'none';
+      generatedStoryTitle.textContent = '';
+      generatedStorySequence.textContent = '';
+      generatedStoryBody.textContent = '';
+      generatedStoryMirror.textContent = '';
+
+      if (validation.error) {
+        errorMessage.textContent = validation.error;
+        errorMessage.style.display = 'block';
+        return;
+      }
+
+      numberInput.value = value;
+      errorMessage.style.display = 'none';
+      const pairs = Array.from(
+        { length: value.length - 1 },
+        (_, index) => value.slice(index, index + 2)
+      );
+      const counts = Object.fromEntries(fieldOrder.map((field) => [field, 0]));
+      let pendingCount = 0;
+      pairs.forEach((pair) => {
+        const line = document.createElement('div');
+        line.className = 'pair-line';
+        const field = magneticFieldByPair[pair];
+        if (field) {
+          line.textContent = `${pair} → ${field}｜${topicByField[field]}`;
+          counts[field] += 1;
+        } else {
+          line.textContent = `${pair} → 待核對`;
+          pendingCount += 1;
+        }
+        pairsOutput.append(line);
+
+        const card = document.createElement('div');
+        card.className = 'flow-card';
+        card.setAttribute('role', 'listitem');
+        card.setAttribute('aria-label', `${pair}，${field || '待核對'}`);
+        const pairLabel = document.createElement('div');
+        pairLabel.className = 'flow-pair';
+        pairLabel.textContent = pair;
+        const fieldLabel = document.createElement('div');
+        fieldLabel.className = 'flow-field';
+        fieldLabel.textContent = field || '待核對';
+        card.append(pairLabel, fieldLabel);
+        if (flowTrack.children.length > 0) {
+          const arrow = document.createElement('span');
+          arrow.className = 'flow-arrow';
+          arrow.textContent = '→';
+          arrow.setAttribute('aria-hidden', 'true');
+          flowTrack.append(arrow);
+        }
+        flowTrack.append(card);
+      });
+
+      const qualifyingSequences = [];
+      for (let index = 0; index <= value.length - 4; index += 1) {
+        const fourDigits = value.slice(index, index + 4);
+        const firstField = magneticFieldByPair[fourDigits.slice(0, 2)];
+        const secondField = magneticFieldByPair[fourDigits.slice(1, 3)];
+        const thirdField = magneticFieldByPair[fourDigits.slice(2, 4)];
+        if (firstField === '生氣' && secondField === '天醫' && thirdField === '延年') {
+          qualifyingSequences.push(fourDigits);
+        }
+      }
+      sequenceDetection.textContent = qualifyingSequences.length > 0
+        ? `發現生天延連續排列：${qualifyingSequences.join('、')}`
+        : '未發現生天延連續排列';
+
+      const sortedCounts = Object.entries(counts)
+        .filter(([, count]) => count > 0)
+        .sort(([fieldA, countA], [fieldB, countB]) =>
+          countB - countA || fieldOrder.indexOf(fieldA) - fieldOrder.indexOf(fieldB)
+        );
+      sortedCounts.forEach(([field, count]) => {
+        const line = document.createElement('div');
+        line.className = 'statistics-line';
+        line.textContent = `${field}：${count}次`;
+        statisticsOutput.append(line);
+      });
+      if (sortedCounts.length === 0) {
+        storyCardText.textContent = '這組數字還藏著尚未解讀的故事';
+      } else {
+        const topCount = sortedCounts[0][1];
+        const leadingFields = sortedCounts
+          .filter(([, count]) => count === topCount)
+          .map(([field]) => field);
+        storyCardText.textContent = leadingFields.length > 1
+          ? `你的數字故事有不只一位主角：${leadingFields.join('、')}。`
+          : `這次的主角是「${leadingFields[0]}」。${storyByField[leadingFields[0]]}`;
+      }
+      if (pendingCount > 0) {
+        pendingCountOutput.textContent = `待核對：${pendingCount}組`;
+        pendingCountOutput.hidden = false;
+      }
+
+      const zeroCount = Array.from(value).filter((digit) => digit === '0').length;
+      const fiveCount = Array.from(value).filter((digit) => digit === '5').length;
+      if (zeroCount === 0 && fiveCount === 0) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.textContent = '這組數字沒有0或5';
+        specialObservationOutput.append(emptyMessage);
+      } else {
+        const observationLines = [
+          `0：${zeroCount}次`,
+          `5：${fiveCount}次`,
+          `05：${pairs.filter((pair) => pair === '05').length}次`,
+          `50：${pairs.filter((pair) => pair === '50').length}次`
+        ];
+        observationLines.forEach((text) => {
+          const line = document.createElement('div');
+          line.className = 'statistics-line';
+          line.textContent = text;
+          specialObservationOutput.append(line);
+        });
+
+        digitChart.hidden = false;
+        digitTrack.style.gridTemplateColumns = `repeat(${value.length}, 2.4rem)`;
+        digitTrack.setAttribute('aria-label', `原始順序的數字排列：${Array.from(value).join('、')}；0和5以顏色標示`);
+        Array.from(value).forEach((digit, index) => {
+          const item = document.createElement('span');
+          item.className = 'observation-digit';
+          if (digit === '0') item.classList.add('digit-zero');
+          if (digit === '5') item.classList.add('digit-five');
+          item.textContent = digit;
+          item.style.gridColumn = String(index + 1);
+          item.style.gridRow = '1';
+          digitTrack.append(item);
+        });
+
+        const laneEndPositions = [];
+        for (let index = 0; index < value.length - 1; index += 1) {
+          const pair = value.slice(index, index + 2);
+          if (pair !== '05' && pair !== '50') continue;
+
+          let lane = laneEndPositions.findIndex((endPosition) => endPosition <= index);
+          if (lane === -1) lane = laneEndPositions.length;
+          laneEndPositions[lane] = index + 2;
+
+          const marker = document.createElement('span');
+          marker.className = 'special-adjacency-label';
+          marker.textContent = '特殊相鄰組合';
+          marker.style.gridColumn = `${index + 1} / span 2`;
+          marker.style.gridRow = String(lane + 2);
+          digitTrack.append(marker);
+        }
+      }
+      result.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
+
+
+
