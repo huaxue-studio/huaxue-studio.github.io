@@ -59,15 +59,21 @@
     .copy-result-button{margin-top:20px}
     .copy-status{min-height:1.5em;margin:8px 0 0;font-size:14px;color:var(--green)}
     .copy-status.error{display:block;color:#a44435}
-    .story-engine{margin-top:20px}
-    .story-engine-button{width:100%}
-    .generated-story{display:none;margin-top:16px;padding:18px;border:1px solid #dce5dc;border-radius:16px;background:#fff}
+    .story-engine{margin-top:0}
+    .story-engine h2{margin:0 0 12px;color:var(--green);font-size:22px}
+    .generated-story{margin-top:0;padding:18px;border:1px solid #dce5dc;border-radius:16px;background:#fff}
     .generated-story h3{margin:0 0 10px;color:var(--green);font-size:19px}
     .generated-story p{margin:0 0 10px;white-space:pre-line}
     .generated-story .story-sequence{font-size:13px;color:var(--muted)}
     .generated-story h4{margin:16px 0 6px;font-size:15px;color:var(--green)}
     .generated-story .story-reminder{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
     .comparison-panel{margin-top:22px}
+    .detailed-analysis{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
+    .detailed-analysis>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-weight:750;color:var(--green);list-style:none}
+    .detailed-analysis>summary::-webkit-details-marker{display:none}
+    .detailed-analysis>summary::after{content:"＋";font-size:20px;line-height:1}
+    .detailed-analysis[open]>summary::after{content:"－"}
+    .detailed-analysis-content{padding-top:18px}
     .comparison-panel h2{font-size:22px;margin:0 0 8px}
     .comparison-form{display:grid;gap:14px;margin-top:18px}
     .comparison-actions{display:flex;gap:10px}
@@ -105,7 +111,21 @@
         <p class="error" id="error-message" role="alert"></p>
       </form>
       <section class="result" id="result" aria-live="polite">
+        <section class="story-engine" aria-labelledby="story-engine-title">
+          <h2 id="story-engine-title">看看我的號碼故事</h2>
+          <article class="generated-story" id="generated-story" aria-live="polite">
+            <h3 id="generated-story-title"></h3>
+            <p id="generated-story-body"></p>
+            <h4>故事裡的鏡子</h4>
+            <p id="generated-story-mirror"></p>
+            <p class="story-reminder">數字是一面鏡子，不是一道判決。本故事為象徵性創作，不代表命運預測。</p>
+          </article>
+        </section>
+        <details class="detailed-analysis" id="detailed-analysis">
+          <summary>展開詳細數字解析</summary>
+          <div class="detailed-analysis-content">
         <h2>兩位數組合與磁場分類</h2>
+        <p class="story-sequence" id="generated-story-sequence"></p>
         <p class="interpretation-note">以下是數字易經教材的傳統解讀主題，不是對個人命運的確定預測；「待核對」組合不提供解讀。</p>
         <div class="pairs" id="pairs-output"></div>
         <section class="flow-chart" aria-labelledby="flow-chart-title">
@@ -132,17 +152,8 @@
         </section>
         <button class="copy-result-button" id="copy-result-button" type="button">複製解析結果</button>
         <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
-        <section class="story-engine" aria-label="號碼故事">
-          <button class="story-engine-button" id="story-engine-button" type="button">看看我的號碼故事</button>
-          <article class="generated-story" id="generated-story" aria-live="polite">
-            <h3 id="generated-story-title"></h3>
-            <p class="story-sequence" id="generated-story-sequence"></p>
-            <p id="generated-story-body"></p>
-            <h4>故事裡的鏡子</h4>
-            <p id="generated-story-mirror"></p>
-            <p class="story-reminder">數字是一面鏡子，不是一道判決。本故事為象徵性創作，不代表命運預測。</p>
-          </article>
-        </section>
+          </div>
+        </details>
       </section>
     </section>
     <section class="panel comparison-panel" aria-labelledby="comparison-title">
@@ -229,7 +240,7 @@
     const comparisonBOutput = document.getElementById('comparison-b-output');
     const clearComparisonButton = document.getElementById('clear-comparison-button');
     const storyDatabase = JSON.parse(document.getElementById('story-database').textContent);
-    const storyEngineButton = document.getElementById('story-engine-button');
+    const detailedAnalysis = document.getElementById('detailed-analysis');
     const generatedStory = document.getElementById('generated-story');
     const generatedStoryTitle = document.getElementById('generated-story-title');
     const generatedStorySequence = document.getElementById('generated-story-sequence');
@@ -358,7 +369,7 @@
       };
     }
 
-    storyEngineButton.addEventListener('click', () => {
+    function renderGeneratedStory() {
       const pairSequence = Array.from(flowTrack.children)
         .filter((item) => item.className === 'flow-card')
         .map((card) => ({
@@ -381,7 +392,7 @@
         generatedStoryMirror.textContent = '這組數字目前沒有已確認的角色可以整理。';
       }
       generatedStory.style.display = 'block';
-    });
+    }
 
     function validateNumberInput(rawValue) {
       const value = rawValue.trim();
@@ -513,6 +524,7 @@
       errorMessage.textContent = '';
       errorMessage.style.display = 'none';
       result.style.display = 'none';
+      detailedAnalysis.open = false;
       pairsOutput.replaceChildren();
       flowTrack.replaceChildren();
       sequenceDetection.textContent = '';
@@ -590,6 +602,7 @@
       const validation = validateNumberInput(numberInput.value);
       const value = validation.value;
       result.style.display = 'none';
+      detailedAnalysis.open = false;
       pairsOutput.replaceChildren();
       flowTrack.replaceChildren();
       sequenceDetection.textContent = '';
@@ -748,6 +761,7 @@
           digitTrack.append(marker);
         }
       }
+      renderGeneratedStory();
       result.style.display = 'block';
     });
   </script>
